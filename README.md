@@ -1,6 +1,8 @@
 MRS for Trainers
 ================
 
+[Signup Sheet](https://microsoft.sharepoint.com/teams/ADS_education/_layouts/15/WopiFrame.aspx?sourcedoc={abb9a754-22dc-41d7-9c18-4ee1f7c6b8d6}&action=view&activeCell=%27Sheet1%27!G15)
+
 # Decisions
 
 + Topics
@@ -41,6 +43,9 @@ MRS for Trainers
     * ggplot2
     * plotly
     * pryr
+
+## Data
++ [Link to Data](https://microsoft-my.sharepoint.com/personal/alizaidi_microsoft_com/_layouts/15/guestaccess.aspx?guestaccesstoken=z93XnvZYkC%2fv9wIByirEMaSnm0uKyK33T6MLfWov0aw%3d&docid=2_11ba7b32a07954f26bdc0e4e3fec4c0f9&rev=1)
 
 # Course Repository
 
