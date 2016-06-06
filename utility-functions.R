@@ -1,10 +1,10 @@
 pkgs_to_install <- c("devtools", "data.table", "stringr")
-pks_missing <- pkgs_to_install[!(pkgs_to_install %in% available.packages()[, 1])]
+pks_missing <- pkgs_to_install[!(pkgs_to_install %in% installed.packages()[, 1])]
 
 install.packages(pks_missing)
 
 dev_pkgs <- c("hadley/dplyr", 
-              "RevolutionAnalytics/dplyrXdf", 
+              "RevolutionAnalytics/dplyrXdf",
               "rstudio/RMarkdown", 
               "hadley/ggplot2", "rOpenSci/plotly")
 
