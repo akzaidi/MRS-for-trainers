@@ -1,7 +1,7 @@
 MRS for Trainers
 ================
 
-[Signup Sheet](https://microsoft.sharepoint.com/teams/ADS_education/_layouts/15/WopiFrame.aspx?sourcedoc={abb9a754-22dc-41d7-9c18-4ee1f7c6b8d6}&action=view&activeCell=%27Sheet1%27!G15)
+[Signup Sheet](https://onedrive.live.com/redir?resid=38B5EC7C9195C01B!224&authkey=!ABNM-z62PPZ2KC8&ithint=file%2cxlsx)
 
 # Decisions
 
