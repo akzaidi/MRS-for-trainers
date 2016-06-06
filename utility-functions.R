@@ -1,4 +1,4 @@
-pkgs_to_install <- c("data.table", "stringr")
+pkgs_to_install <- c("devtools", "data.table", "stringr")
 pks_missing <- pkgs_to_install[!(pkgs_to_install %in% available.packages()[, 1])]
 
 install.packages(pks_missing)
