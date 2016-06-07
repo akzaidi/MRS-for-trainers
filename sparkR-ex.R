@@ -4,6 +4,7 @@ r <- getOption('repos')
 r["CRAN"] <- "https://mran.revolutionanalytics.com/snapshot/2016-06-07/"
 options(repos = r)
 install.packages('magrittr')
+install.packages('ggplot2')
 
 
 load("manhattan.RData")
