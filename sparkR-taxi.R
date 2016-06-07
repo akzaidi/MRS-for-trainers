@@ -1,8 +1,16 @@
-rxHadoopListFiles("/")
+# check for your data
 
+rxHadoopListFiles("/nyctaxi")
+rxHadoopCommand("fs -cat /nyctaxi/sample_taxi.csv | head")
+
+# add SparkR location to your library paths
 .libPaths(c(.libPaths(),
             file.path(Sys.getenv("SPARK_HOME"), "R", "lib")))
 
+# load SparkR
+library(SparkR)
+
+# create sql context to create Spark DataFrames
 sparkEnvir <- list(spark.executor.instance = '10',
                    spark.yarn.executor.memoryOverhead = '8000')
 
@@ -26,5 +34,5 @@ dataframe_import <- function(path) {
   
 }
 
-# full_taxi <- dataframe_import()
+sample_taxi <- dataframe_import("/nyctaxi/sample_taxi.csv")
 
