@@ -53,6 +53,7 @@ taxi_hood_sum <- function(taxi_data = taxi_df, ...) {
 
 tile_plot_hood <- function(df = taxi_hood_sum()) {
   
+  library(ggplot2)
   
   ggplot(data = df, aes(x = pickup_nhood, y = dropoff_nhood)) + 
     geom_tile(aes(fill = ave_tip), colour = "white") + 
@@ -64,7 +65,7 @@ tile_plot_hood <- function(df = taxi_hood_sum()) {
 }
 
 # data.frame version
-# tile_plot_hood(taxi_hood_sum(taxi_df))
+tile_plot_hood(taxi_hood_sum(taxi_df))
 
 # xdf version
 # taxi_group_xdf <- taxi_hood_sum(taxi_transform,
@@ -72,3 +73,9 @@ tile_plot_hood <- function(df = taxi_hood_sum()) {
 #                                                  list(manhattan_hoods = manhattan_hoods)))
 
 # tile_plot_hood(as.data.frame(taxi_group_xdf))
+
+# Spark DataFrame version
+library(SparkRext)
+taxi_summary <- taxi_hood_sum(sample_taxi)
+taxi_df <- taxi_summary %>% collect
+tile_plot_hood(taxi_df)
