@@ -7,6 +7,7 @@ write.df(sample_taxi,
          "overwrite", 
          header = "true")
 
+sparkR.stop()
 
 file_to_delete <- file.path(data_path, 
                             "sampleTaxi", "_SUCCESS")
@@ -44,7 +45,7 @@ rxFactors(inData = taxi_xdf, outFile = taxi_Fxdf,
           factorInfo = c("pickup_hour", "pickup_nhood")
 )
 
-system.time(dtree_model <- rxDTree(tip_pct ~ trip_distance + 
-                                     pickup_hour + 
-                                     pickup_nhood, 
-                                   data = taxi_Fxdf))
+
+system.time(linmod <- rxLinMod(tip_pct ~ trip_distance + pickup_hour + 
+                                 pickup_nhood, 
+                               data = taxi_Fxdf, blocksPerRead = 2))
