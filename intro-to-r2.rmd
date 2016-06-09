@@ -1,17 +1,8 @@
 ---
 title: "Introduction to R"
-author: "Ali Zaidi, Machine Learning and Data Science Education Team"
-date: June 6th, 2016
-output: html_notebook
-# output:
-#   ioslides_presentation:
-#     logo: clark-logo.png
-#     smaller: yes
-#     widescreen: yes
-#   beamer_presentation: default
-#   slidy_presentation: default
-# transition: rotate
-# runtime: shiny
+author: "Microsoft Data Science Team"
+date: "June 6, 2016"
+output: html_document
 ---
 
 # Overview of the R Project
@@ -226,18 +217,6 @@ Your turn:
 * How many observations that started in Harlem ended in the Financial District?
 
 
-```{r, echo=FALSE}
-library(shiny)
-inputPanel(
-  tags$textarea(id = "ex1", rows = 3, cols = 40,
-                style = "width:700px;font-size:16px;",
-                'filter(bankData)')
-)
-renderPrint({
-  eval(parse(text = input$ex1))
-})
-```
-
 ## Solution
 
 ```{r harlem-fidi, opts.label="solution"}
@@ -293,18 +272,6 @@ select(arrange(taxi_df, desc(fare_amount), pickup_nhood), fare_amount, pickup_nh
 
 ## Exercise
 Use `arrange()` to  sort on the basis of `tip_amount`, `dropoff_nhood`, and `pickup_dow`, with descending order for tip amount
-
-```{r, echo=FALSE}
-inputPanel(
-  tags$textarea(id = "ex2", rows = 3, cols = 40,
-                style = "width:700px;font-size:16px;",
-                'arrange(bankData)')
-)
-renderPrint({
-  eval(parse(text = input$ex2))
-})
-```
-
 
 ## Solution
 
@@ -426,7 +393,7 @@ taxi_df %>%
   summarize(ave_tip = mean(tip_pct), 
             ave_dist = mean(trip_distance)) %>% 
   filter(ave_dist > 3, ave_tip > 0.05) %>% 
-  ggplot(data = ., aes(x = pickup_nhood, y = dropoff_nhood)) + 
+  ggplot(aes(x = pickup_nhood, y = dropoff_nhood)) + 
     geom_tile(aes(fill = ave_tip), colour = "white") + 
     theme(axis.text.x = element_text(angle = 45, hjust = 1),
           legend.position = 'bottom') +
@@ -442,18 +409,6 @@ Your turn:
 * Use the pipe operator to group by day of week and dropoff neighborhood
 * Filter to Manhattan neighborhoods 
 * Make tile plot with average fare amount in dollars as the fill
-
-```{r, echo=FALSE}
-inputPanel(
-  tags$textarea(id = "ex3", rows = 3, cols = 40,
-                style = "width:700px;font-size:16px;",
-                'bankData')
-)
-renderPrint({
-  eval(parse(text = input$ex3))
-})
-```
-
 
 ## Solution
 
@@ -476,8 +431,6 @@ distinct
 :    Extract unique values (frequently used with `arrange()`)
 
 Chaining with the `%>%` operator can result in more readable code.
-
-
 
 
 
