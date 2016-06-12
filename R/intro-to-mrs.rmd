@@ -1,0 +1,339 @@
+---
+title: "Introduction to Microsoft R Server"
+author: "Ali Zaidi, Machine Learning and Data Science Education Team"
+date: "June 6, 2016"
+output:
+  ioslides_presentation:
+    logo: images/clark-logo.png
+    smaller: yes
+    widescreen: yes
+---
+
+# Overview of Microsoft R Server
+
+## Learning Plan | What You'll Learn
+
+> - What is Microsoft R Server, and how it addresses R's limitations
+> - What's RevoScaleR external data frame data type that extends R's data structures to out-of-memory objects
+> - How to develop predictive models with Microsoft R Server
+> - How to test predictive models with Microsoft R Server
+
+
+## Microsoft R Server | REvolution
+
+MRS extends open-source R to allow:
+
+* Multi-threading
+  - Matrix operations, linear algebra, and many other math operations to run on all available cores
+* Parallel Processing
+  - ScaleR functions utilize all available resources, local or distributed
+* On-disk data storage
+  - RAM limitations lifted
+  - data store could be HDFS, SQL Server, Blob Storage, Teradata...
+
+## Compute Contexts | Move Your Compute
+
+* You can adjust the compute context for Microsoft R Server
+* All subsequent operations will operate in the new compute context, no need to rewrite code
+* For local compute contexts, you can utilize all cores to optimize your math operations for parallel processes
+* Your data is constrained by your disk space, not your RAM
+* For distribute compute contexts, such as Hadoop, you can conduct parallel execution on all available nodes
+* Utilize distributed file systems like HDFS to scale your data size
+
+## How MRS Works | Parallel External Memory Algorithms (PEMA)
+
+1. Data is saved in a blockwise, chunked manner
+2. A chunk/subset of data is extracted from the main dataset and brought into memory
+3. An intermediate result is calculated from that chunk of data
+4. Intermediate results are computed, reduced into final data
+
+## Available Algorithms
+
+* Linear regression (rxLinMod)
+* Generalized linear models (rxLogit, rxGLM) 
+* Decision trees (rxDTree)
+* Gradient boosted decision trees (rxBTree) 
+* Decision forests (rxDForest)
+* K-means (rxKmeans)
+* Naïve Bayes (rxNaiveBayes)
+* More to come through the RML Package in Fall 2016
+
+# Data Manipulation and Summarization with MRS
+
+## Import Flights Data to XDF
+
+
+```{r-import-flights, message = FALSE}
+library(nycflights13)
+flights_xdf <- rxImport(inData = flights, outFile = "../data/flights.xdf",
+                        overwrite = TRUE)
+rxGetInfo(flights_xdf, getVarInfo = TRUE)
+```
+
+## Summarizing XDFs | rxSummary
+
+* We can summarize columns of an XDF using the `rxSummary` function
+* Summary statistics for numeric variables, and tabulations for factors
+
+```{r-rxsummary, message = FALSE}
+rxSummary(~ ., data = flights_xdf)
+```
+
+
+## Creating Factors | rxFactors
+
+* We didn't specify factor variables inside of `rxImport`
+* By default, `rxImport` assumes `stringsAsFactors = HELLNO`
+* `rxFactors` can be used to convert character/numeric columns into factors
+
+```{r-factors, messge = FALSE}
+rxFactors(inData = flights_xdf,
+          outFile = flights_xdf,
+          factorInfo = list(
+              carrier_F = list(varName = "carrier"),
+              origin_F = list(varName = "origin"),
+              dest_F = list(varName = "dest")),
+          overwrite = TRUE)
+# rxSummary(~ ., data = flights_xdf)
+```
+
+## Summarizing Data in Groups
+
+* You can summarize multiple columns at a time with `rxSummary`
+* You can also summarize data in groups by indicating dependencies
+
+```{r-summary-multiple}
+# rxSummary(~arr_delay + dep_delay, data = flight_xdf)
+rxSummary(arr_delay ~ origin_F, data = flights_xdf)
+```
+
+## Approximate Quantiles | rxQuantile
+
+* To calculate approximate quantiles you can use the `rxQuantile` function
+
+```{r-quantile, message = FALSE}
+rxQuantile(varName = "arr_delay", data = flights_xdf)
+lapply(c("arr_delay", "dep_delay"), rxQuantile, data = flights_xdf)
+
+```
+
+
+## Cross Tabulations | rxCrossTabs
+
+* For categorical data, you can create contingency tables with `rxCrossTabs`
+
+```{r-cross-tabs, message = F}
+rxCrossTabs( ~ origin_F : carrier_F, data = flights_xdf)
+# rxCrossTabs( ~ origin_F : F(month), data = flights_xdf)
+
+```
+
+## Cross Tabulations | rxCube
+
+* You can calculate cross-tabulated sums and averages very efficiently with `rxCube`
+* Does similar computations as `rxCrossTabs`, but different return format and generally more efficient
+
+```{r-cube, message = FALSE}
+rxCube(arr_delay ~ carrier_F : F(month), data = flights_xdf,
+       means = TRUE)
+# rxCube(arr_delay ~ carrier_F : F(month), data = flights_xdf)
+```
+
+## Returning Dataframes with rxCube
+
+* rxCube as an argument `returnDataFrame`
+
+```{r-plot-cube, message = FALSE, warning = F}
+library(ggplot2)
+library(magrittr)
+rxCube(arr_delay ~ carrier_F:F(month):origin_F, data = flights_xdf,
+       means = TRUE, returnDataFrame = TRUE) %>% 
+  ggplot(aes(x = F_month, y = arr_delay)) + 
+  geom_point(aes(size = Counts, color = origin_F, alpha = 0.5)) + 
+  facet_wrap(~carrier_F) + theme_bw()
+
+```
+
+
+## Transformations
+
+* It's very easy to do row-wise operations with `rxDataStep`
+
+```{r-data-step, message = FALSE}
+rxDataStep(inData = flights_xdf,
+           outFile = flights_xdf,
+           transforms = list(date = as.Date(paste(year, month, day, sep = "-")),
+                             dayOfWeek = format(date, format = "%A")),
+           overwrite = TRUE)
+
+```
+
+
+## Convert Day of Week to Factor
+
+```{r-dow, message = F}
+rxFactors(inData = flights_xdf,
+          outFile = flights_xdf,
+          factorInfo = list(
+              dayOfWeek_F = list(varName = "dayOfWeek",
+                                 levels = c("Sunday", "Monday", "Tuesday",
+                                            "Wednesday", "Thursday", "Friday",
+                                            "Saturday"))
+          ),
+          overwrite = TRUE
+)
+
+```
+
+
+# Estimating Models 
+
+## Splitting Data into Training and Test Sets
+
+* To compare different models, we can split the data into train and validation sets
+* Let's try to estimate binary classification models for arrival delays
+
+```{r-split, message = FALSE}
+rxDataStep(inData = flights_xdf,
+           outFile = flights_xdf,
+           transforms = list(was_delayed = factor(ifelse(arr_delay > 0,
+                                                         1, 0), 
+                                                  levels = c("0", "1"))),
+           overwrite = TRUE)
+
+
+```
+
+## Splitting Data into Training and Test Sets
+
+```{r-splitting, message = F}
+train_xdf <- rxDataStep(inData = flights_xdf,
+                        outFile = "../data/train.xdf",
+                        rowSelection = month <= 6,
+                        overwrite = TRUE)
+
+rxDataStep(inData = flights_xdf,
+           outFile = ".data/test.xdf",
+           rowSelection = month > 6,
+           overwrite = TRUE) -> test_xdf
+
+
+```
+
+## Estimate Model | Decision Tree
+
+* We can estimate a variety of tree-based algorithms
+
+```{r-dtree, message = FALSE}
+
+delay_prediction <- rxDTree(was_delayed ~ carrier_F + 
+                              date + dayOfWeek_F + 
+                              origin_F + dest_F, 
+                            method = "class", pruneCp = "auto",
+                            data = train_xdf)
+# plot(RevoTreeView::createTreeView(delay_prediction))
+
+```
+
+## Estimate Model | Decision Forest
+
+```{r-dforest, message = FALSE}
+
+delay_prediction_forest <- rxDForest(was_delayed ~ carrier_F + 
+                                     date + dayOfWeek_F + 
+                                     origin_F + dest_F, 
+                                   method = "class", nTree = 10,
+                                   data = train_xdf)
+
+```
+
+
+
+## Estimate Model | Gradient Boosted Trees
+
+```{r-sgb, message = FALSE}
+
+delay_prediction_sgb <- rxBTrees(was_delayed ~ carrier_F +
+                                   date + dayOfWeek_F +
+                                   origin_F + dest_F, 
+                                   method = "class", nTree = 10,
+                                   data = train_xdf)
+
+```
+
+
+
+## Test Models | Decision Tree
+
+* Now that we have our three trained models, we can score/test them
+* The scoring function for the MRS PEMA algorithms is `rxPredict`
+
+```{r-predict, message = FALSE}
+rxPredict(delay_prediction, 
+          outData = "../data/predict.xdf", 
+          writeModelVars = TRUE, 
+          data = test_xdf, 
+          predVarNames = c("0_tree", "1_tree"),
+          overwrite = TRUE) -> predict_xdf
+
+```
+
+## Test Models | Decision Forest
+
+* We will score the decision forest model on the same dataset
+* Slightly different output, so we're going to use the additional parameters
+
+```{r-predict-forest, message = FALSE}
+
+rxPredict(delay_prediction_forest, 
+          outData = "../data/predict.xdf", 
+          writeModelVars = TRUE, 
+          predVarNames = c("0_forest", "1_forest", "delay_pred_forest"),
+          data = test_xdf, type = "prob") -> predict_xdf
+
+
+```
+
+## Test Models | Boosted Trees
+
+* And finally, the stochastic gradient boosted trees
+
+```{r-predict-sgb, message = FALSE}
+
+rxPredict(delay_prediction_sgb, 
+          outData = "../data/predict.xdf", 
+          writeModelVars = TRUE, 
+          predVarNames = c("1_sgb"),
+          data = test_xdf, type = "prob") -> predict_xdf
+
+
+```
+
+## Model Comparison
+
+* First let's convert the binary target class into an integer
+
+```{r-binary-convert, message = FALSE}
+rxDataStep(inData = predict_xdf@file,
+           outFile = predict_xdf,
+           transforms = list(arrival_delay = as.integer(as.character(was_delayed))),
+           overwrite = TRUE)
+
+```
+
+## Model Comparison | ROC Curve
+
+```{r-roc-curve, message = FALSE}
+roc_values <- rxRoc(actualVarName = "arrival_delay",
+           predVarNames = c("1_tree", "1_forest", "1_sgb"),
+           data = predict_xdf)
+library(ggplot2)
+ggplot(roc_values, 
+	aes(x = 1 - specificity, y = sensitivity, colour = predVarName)) + 
+	geom_point() + xlab("False Positive Rate") + 
+	ylab("True Positive Rate") +
+	ggtitle("ROC Curves for Binary Classification Model") 
+	theme_bw()
+
+```
+

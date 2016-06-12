@@ -2,6 +2,7 @@ MRS for Trainers
 ================
 
 [Signup Sheet](https://onedrive.live.com/redir?resid=38B5EC7C9195C01B!224&authkey=!ABNM-z62PPZ2KC8&ithint=file%2cxlsx)
+[Feedback Survey](https://www.surveymonkey.com/r/HZFVHR8)
 
 # Decisions
 
@@ -69,3 +70,14 @@ MRS for Trainers
 + RxSpark
 + SparkR
 + Train the trainer
+
+# Todo
++ ~~give one source for the presentation
+    * add params for different source types~~
++ packrat the installation process
++ create function for data transform and plot
++ add do section in intro-to-r
++ add magrittr section in intro-to-r
++ move data to one drive personal or azure blob storage
++ send out recommendations algorithm
++ how to make interative plots in jupyter

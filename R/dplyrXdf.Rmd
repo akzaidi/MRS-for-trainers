@@ -1,0 +1,124 @@
+---
+title: "Data Manipulation with dplyrXdf"
+author: "Microsoft Data Science Team"
+date: "June 6, 2016"
+output: html_document
+---
+
+
+# Introduction
+
+## Overview | Plan
+
+At the end of this session, you will have learned how to:
+
+* Take advantage of the verbs and syntax you learned from the `dplyr` module to manipulate `RxXdfData` data objects
+* Summarize your `RxXdfData` objects quickly and easily
+* Create custom functions and use them for mutations and summarizations
+* Understand where and when to use the `dplyrXdf` package and when to use functions from the `RevoScaleR` package
+
+## Why dplyrXdf? | Simplify Your Analysis Pipeline
+
+* The `RevoScaleR` package enables R users to manipulate data that is larger than memory
+* It introduces a new data type, called an `xdf` (short for eXternal Data Frame), which are highly efficient out-of-memory objects
+* However, many of the `RevoScaleR` functions have a dramatically different syntax from base R functions
+* The `dplyr` package has becme exceptionally popular, due to its appealing syntax, and since it's extensible, we have created a new package called `dplyrXdf` that exposes most of the `dplyr` functionality to `xdf` objects
+* Many data analysis pipelines require creating many intermediate datasets, which are only needed for their role in deriving a final dataset, but have no/little use on their own
+* The `dplyrXdf` abstracts this task of file management, so that you can focus on the data itself, rather than the management of intermediate files
+* Unlike `dplyr`, or other base R packages, `dplyrXdf` allows you to work with data residing _outside_ of memory, and therefore scales to datasets of arbitrary size
+
+
+## Requirements | What You'll Need
+
+* I expect that you have already covered the `dplyr` training
+* Understand the *XDF* data type and how to import data to *XDF*
+* If you're working on a different computer than your trianer: have (`devtools`)[github.com/hadley/devtools] (and if on a Windows machine, [Rtools](https://cran.r-project.org/bin/windows/Rtools/))
+
+## Installing dplyrXdf
+
+* The `dplyrXdf` package is not yet on CRAN
+* You have to download it from [github](https://github.com/RevolutionAnalytics/dplyrXdf/)
+  - if you're on a windows machine, install [Rtools](https://cran.r-project.org/bin/windows/Rtools/) as well
+  - the `devtools` package provides a very handy function, `install_github`, for installing R packages saved in github repositories
+
+## Create XDF from taxi data
+
+```{r load_data, eval = TRUE}
+library(dplyrXdf)
+taxi_xdf <- RxXdfData("../data/yellow_tripdata_2015.xdf")
+```
+
+# Simplified Pipelines for Data Summaries
+
+## Data Transforms | The rxDataStep Way
+
+* All the functionality exposed by the `dplyrXdf` package can also be completed
+by using the `rxDataStep` function in the `RevoScaleR` package included with your MRS installation
+* In fact, `dplyrXdf` consists almost entirely of wrapper functions that call on other `rx` functions
+* Let's compare how the workflow for adding a new column to a dataset with `rxDataStep` vs `dplyrXdf`
+
+```{r rxdatastepway}
+taxi_transform <- rxDataStep(inData = taxi_xdf,
+           outFile = RxXdfData("../data/taxi_transform.xdf"),
+           transforms = list(tip_pct = tip_amount/fare_amount),
+           rowsPerRead = 500000,
+           overwrite = TRUE)
+```
+
+## Data Transforms | The rxDataStep Way
+
+```{r rxdatastapway_continued}
+rxGetInfo(RxXdfData("../data/taxi_transform.xdf"), numRows = 2)
+
+```
+
+## Data Transforms | The dplyrXdf Way
+
+* We could do the same operation with `dplyrXdf`, using the exam same syntax 
+that we learned in the `dplyr` module and taking advantage of the `%>%` operator 
+
+```{r dplyrXdf_mutate}
+system.time(taxi_transform <- taxi_xdf %>% mutate(tip_pct = tip_amount/fare_amount))
+taxi_transform %>% rxGetInfo(numRows = 2)
+
+```
+
+## Differences
+
+* The major difference between the `rxDataStep` operation and the `dplyrXdf` method, is that we do not specify an `outFile` argument anywhere in the `dplyrXdf` pipeline
+* In our case, we have assigned our `mutate` value to a new variable called `taxi_transform`
+* This creates a temporary file to save the intermediate `xdf`, and only saves the most recent output of a pipeline, where a pipeline is defined as all operations starting from a raw xdf file.
+* To copy an *xdf* from the temporary directory to permanent storage, use the `persist` verb
+
+```{r inter-file}
+taxi_transform@file
+persist(taxi_transform, outFile = "../data/taxiTransform.xdf")
+```
+
+
+## Using dplyrXdf for Aggregations | dplyrXdf Way
+
+* The `dplyrXdf` package really shines when used for data aggregations and summarizations
+* Whereas `rxSummary`, `rxCube`, and `rxCrossTabs` can compute a few summary statistics and do aggregations very quickly, they are not sufficiently general to be used in all places
+
+
+```{r group-xdf}
+taxi_group <- taxi_transform %>%
+  group_by(pickup_nhood) %>% 
+  summarize(ave_tip_pct = mean(tip_pct))
+taxi_group %>% head
+```
+
+## Using dplyrXdf for Aggregations | rxCube Way
+
+* The above could have been done with `rxCube` as well, but would require additional considerations
+* We would have to make sure that the `pickup_nhood` column was a factor (can't mutate in place because of different data types)
+
+```{r cube-way}
+rxFactors(inData = taxi_transform, 
+          outFile = "../data/taxi_factor.xdf", 
+          factorInfo = c("dropoff_nhood"), overwrite = TRUE)
+rxCube(tip_pct ~ dropoff_nhood, means = TRUE, data = "taxi_factor.xdf")
+
+```
+

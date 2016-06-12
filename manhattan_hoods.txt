@@ -1,8 +1,0 @@
-manhattan_hoods <- c("Chinatown", "Little Italy", 
-                  "Tribeca", "Lower East Side", "Soho", "Financial District",
-                  "Greenwich Village", "East Village", "Battery Park", 
-                  "West Village", "Gramercy", "Chelsea", "Garment District", 
-                  "Murray Hill", "Clinton", "Midtown", "North Sutton Area", 
-                  "Upper East Side", "Central Park", "Upper West Side", "Caregie Hill",
-                  "Yorkville", "East Harlem", "Morningside Heights", "Harlem",
-                  "Hamilton Heights", "Washington Heights", "Inwood")
