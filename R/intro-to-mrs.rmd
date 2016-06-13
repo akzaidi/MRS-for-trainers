@@ -7,6 +7,9 @@ output:
     logo: images/clark-logo.png
     smaller: yes
     widescreen: yes
+  html_document:
+    toc: yes
+    keep_md: true
 ---
 
 # Overview of Microsoft R Server
@@ -213,7 +216,7 @@ train_xdf <- rxDataStep(inData = flights_xdf,
                         overwrite = TRUE)
 
 rxDataStep(inData = flights_xdf,
-           outFile = ".data/test.xdf",
+           outFile = "../data/test.xdf",
            rowSelection = month > 6,
            overwrite = TRUE) -> test_xdf
 

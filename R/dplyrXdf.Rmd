@@ -2,7 +2,14 @@
 title: "Data Manipulation with dplyrXdf"
 author: "Microsoft Data Science Team"
 date: "June 6, 2016"
-output: html_document
+output:
+  ioslides_presentation:
+    logo: images/clark-logo.png
+    smaller: yes
+    widescreen: yes
+  html_document:
+    toc: yes
+    keep_md: true
 ---
 
 
@@ -92,7 +99,7 @@ taxi_transform %>% rxGetInfo(numRows = 2)
 
 ```{r inter-file}
 taxi_transform@file
-persist(taxi_transform, outFile = "../data/taxiTransform.xdf")
+persist(taxi_transform, outFile = "../data/taxiTransform.xdf") -> taxi_transform
 ```
 
 
@@ -117,8 +124,11 @@ taxi_group %>% head
 ```{r cube-way}
 rxFactors(inData = taxi_transform, 
           outFile = "../data/taxi_factor.xdf", 
-          factorInfo = c("dropoff_nhood"), overwrite = TRUE)
-rxCube(tip_pct ~ dropoff_nhood, means = TRUE, data = "taxi_factor.xdf")
-
+          factorInfo = c("dropoff_nhood"), 
+          overwrite = TRUE)
+head(rxCube(tip_pct ~ dropoff_nhood, 
+            means = TRUE, 
+            data = "../data/taxi_factor.xdf"))
+file.remove("../data/taxi_factor.xdf")
 ```
 

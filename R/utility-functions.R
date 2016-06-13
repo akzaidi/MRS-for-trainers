@@ -1,3 +1,12 @@
+
+# package insallation -----------------------------------------------------
+
+# update cran
+r <- getOption('repos')
+# set mirror to something a bit more recent
+r["CRAN"] <- "https://mran.revolutionanalytics.com/snapshot/2016-06-07/"
+options(repos = r)
+
 pkgs_to_install <- c("devtools", "data.table", "stringr", 
                      "broom", "magrittr", "dplyr")
 pks_missing <- pkgs_to_install[!(pkgs_to_install %in% installed.packages()[, 1])]
@@ -11,7 +20,13 @@ dev_pkgs <- c("RevolutionAnalytics/dplyrXdf",
               "rOpenSci/plotly")
 devtools::install_github(dev_pkgs)
 
-render_slides <- function(pres_type = "shiny", filepath = "R/intro-to-r-pres.rmd") {
+
+# Creating Slides from Rmds -----------------------------------------------
+
+
+render_slides <- function(pres_type = "shiny", 
+                          filepath = "R/intro-to-r-pres.rmd",
+                          outfilename = NULL) {
   
   ## render slides
   ## output_format parameters are relative to rmd file
@@ -30,6 +45,7 @@ render_slides <- function(pres_type = "shiny", filepath = "R/intro-to-r-pres.rmd
                       output_dir = "output",
                       params = list(prestype = "static"), 
                       output_format = pres_type, 
+                      output_file = outfilename,
                       output_options = list(toc = TRUE))
   }
   
@@ -37,7 +53,8 @@ render_slides <- function(pres_type = "shiny", filepath = "R/intro-to-r-pres.rmd
     rmarkdown::render(filepath, 
                       output_dir = "output",
                       params = list(prestype = "static"), 
-                      output_format = pres_type, 
+                      output_format = pres_type,
+                      output_file = outfilename,
                       output_options = list(logo = "images/clark-logo.png",
                                             smaller = TRUE,
                                             widescreen = TRUE))
@@ -45,10 +62,23 @@ render_slides <- function(pres_type = "shiny", filepath = "R/intro-to-r-pres.rmd
   
 }
 
-# Create all slides
+# knit the slides ---------------------------------------------------------
+
+# run the shiny app
+render_slides(pres_type = "shiny")
+
+# Create all types for intro-to-r
 lapply(c("html_document", "html_notebook", "ioslides_presentation"), 
        function(x) render_slides(pres_type = x))
 
+# for dplyrXdf and MRS, just create ioslides and regular html_doc with md (no html_notebook)
+mapply(render_slides, pres_type = rep(c("html_document", "ioslides_presentation"), 2),
+       filepath = c(rep("R/dplyrXdf.Rmd", 2), rep("R/intro-to-mrs.rmd", 2)),
+       outfilename = paste0(c('dplyrXdf', 'dplyrXdf-slides',
+                              'intro-to-mrs', 'intro-to-mrs-slides'), ".html"))
+
+
+# create data sample ------------------------------------------------------
 
 
 create_rand_split <- function(xdf, num_splits = 2,
@@ -64,6 +94,10 @@ create_rand_split <- function(xdf, num_splits = 2,
              overwrite = TRUE)
   
 }
+
+# Plotting Pipeline Example with Taxi Data --------------------------------
+
+
 
 taxi <- RxXdfData("data/yellow_tripdata_2015.xdf")
 
