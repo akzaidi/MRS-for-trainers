@@ -148,7 +148,7 @@ tile_plot_hood(taxi_hood_sum(taxi_df))
  tile_plot_hood(as.data.frame(taxi_group_xdf))
 
 # Spark DataFrame version
-library(SparkRext)
+library(SparkRext)s
 taxi_summary <- taxi_hood_sum(sample_taxi)
 taxi_df <- taxi_summary %>% collect
 tile_plot_hood(taxi_df)
