@@ -4,8 +4,9 @@ MRS for Trainers
 + [Signup Sheet, please fill out before class!](https://onedrive.live.com/redir?resid=38B5EC7C9195C01B!224&authkey=!ABNM-z62PPZ2KC8&ithint=file%2cxlsx)
     * I'll use the signup sheet to email you, so add your email address if you want to be contacted with updates
 + [Feedback Survey, please fill out after class](https://www.surveymonkey.com/r/HZFVHR8)
-+ Download Data as a zip file, and extract to data dir/
++ Download Data as a zip file, and extract to directory data/
     * [data link](https://alizaidi.blob.core.windows.net/training/data.zip)
++ Package prerequisite are provided in the first section of the [utility-function.R script](https://github.com/akzaidi/MRS-for-trainers/blob/master/R/utility-functions.R#L2). If you're using a windows machine, please download and install [Rtools 3.2](https://cran.r-project.org/bin/windows/Rtools/)
 
 # Decisions About Course Format
 
@@ -15,7 +16,7 @@ MRS for Trainers
     * Data Manipulation with `dplyrXdf`
     * Spark, SparkR and RxSpark
 + Datasets
-    * NYC Taxi Data
+    * [NYC Taxi Data](http://www.andresmh.com/nyctaxitrips/)
 + Compute Contexts: we will focus on the local compute contexts and RxSpark compute contexts. Subsequent trainings may be centered on
     * LocalParallel
     * RxInSqlServer
