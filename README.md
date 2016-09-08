@@ -1,6 +1,10 @@
 MRS for Trainers
 ================
 
+# OLD REPOSITORY -- PLEASE READ
+
+This is an old fork of the Microsoft R course, and is no longer updated. Please refer to [github.com/akzaidi/R-cadence](https://github.com/akzaidi/R-cadence) for the updated repository. Thanks!
+
 + [Signup Sheet, please fill out before class!](https://onedrive.live.com/redir?resid=38B5EC7C9195C01B!224&authkey=!ABNM-z62PPZ2KC8&ithint=file%2cxlsx)
     * I'll use the signup sheet to email you, so add your email address if you want to be contacted with updates
 + [Feedback Survey, please fill out after class](https://www.surveymonkey.com/r/HZFVHR8)
